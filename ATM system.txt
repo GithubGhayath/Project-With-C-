@@ -1,0 +1,456 @@
+#include<iostream>
+#include<fstream>
+#include<string>
+#include<vector>
+#include<cmath>
+#include<cctype>
+
+using namespace std;
+
+
+
+
+const string FilePath = "C:/Users/Ghiath/source/repos/ConsoleApplication105/ConsoleApplication105/MyFile.txt";
+
+struct stClient
+{
+	string AccountNumber;
+	string PinCode;
+	string Name;
+	string PhoneNumber;
+	int AccountBalance;
+};
+
+stClient Global{};
+
+
+
+enum enChoice { QuickWithdraw = 1, NormalWithdraw = 2, Deposit = 3, CheckBalance = 4, Logout = 5 };
+enum enQuickWithdraw { Twonty = 1, Fifty = 2, Handerd = 3, TwoHanderd = 4, FourHanderd = 5, SixHanderd = 6, EightHanderd = 7, Thouthent = 8, Exit = 9 };
+
+//Declear
+void GoBackToMenue();
+void ATM();
+void QucikWithdraw();
+void Login();
+void NormalDrawHeader();
+void DepositHeder();
+
+
+
+
+
+//FounctionProcess
+stClient FillDate_UseInFile(vector<string> Data)
+{
+	stClient Client{};
+	Client.AccountNumber = Data[0];
+	Client.PinCode = Data[1];
+	Client.Name = Data[2];
+	Client.PhoneNumber = Data[3];
+	Client.AccountBalance = stoi(Data[4]);
+
+	return Client;
+
+}
+vector<string> Split(string text, string sep = "#//#")
+{
+	short Pos = 0;
+	vector<string> Words;
+	string Word = "";
+
+	while ((Pos = text.find(sep)) != std::string::npos)
+	{
+		Word = text.substr(0, Pos);
+		if (Word != " ")
+		{
+			Words.push_back(Word);
+		}
+		text = text.erase(0, Pos + sep.length());
+	}
+	if (text != " ")
+	{
+		Words.push_back(text);
+	}
+
+	return Words;
+}
+string Join(stClient Client, string sep = "#//#")
+{
+	return Client.AccountNumber + sep + Client.PinCode + sep + Client.Name + sep + Client.PhoneNumber + sep + to_string(Client.AccountBalance);
+}
+enChoice ReadChoiceInATM_Menue()
+{
+	short Choice = 0;
+	cout << "Choose What do you want to do?  [1 To 5] : ";
+	cin >> Choice;
+
+	return (enChoice)Choice;
+}
+enQuickWithdraw ReadChoiceInQuickWithdraw()
+{
+	short Amount = 0;
+	do
+	{
+		cout << "Choose what to withdraw from [1] to [9] : ";
+		cin >> Amount;
+	} while (Amount < 1 || Amount>9);
+	return (enQuickWithdraw)Amount;
+}
+vector<stClient> LoadDataFromFile()
+{
+	vector<stClient> Clients;
+	string Line = "";
+
+	fstream File;
+	File.open(FilePath, ios::in);
+
+	if (File.is_open())
+	{
+		while (getline(File, Line))
+		{
+			Clients.push_back(FillDate_UseInFile(Split(Line)));
+		}
+
+		File.close();
+
+	}
+
+	return Clients;
+
+}
+void SaveDateToFile(vector<stClient> Clients)
+{
+	fstream File;
+	File.open(FilePath, ios::out);
+
+	if (File.is_open())
+	{
+		for (stClient& C : Clients)
+		{
+				File << Join(C) << endl;
+		}
+		File.close();
+	}
+}
+int ReadAnount5_s()
+{
+	int Anount;
+	bool ItIs5_s = false;
+	do
+	{
+		cout << "Enter an amount multiple of 5's ? ";
+		cin >> Anount;
+		ItIs5_s = (Anount % 5 == 0) ? false : true;
+	} while (ItIs5_s);
+
+	return Anount;
+}
+bool AreYouSure()
+{
+	char letter = 'y';
+	cout << "\n\n\nAre you sure you want perfrom this transaction?  y/n : ";
+	cin >> letter;
+	if (tolower(letter) == 'y')
+	{
+		return true;
+	}
+	else
+		return false;
+}
+string GetAccountBalance()
+{
+	return "Your Balance is : " + to_string(Global.AccountBalance) + "\n";
+}
+bool CheckAmount(int Amount)
+{
+	if (Global.AccountBalance < Amount)
+		return false;
+	else
+		return true;
+}
+string SearchForClientsByAccountNumbrAndPinCode(vector<stClient> Clients, stClient& Client)
+{
+	for (stClient& C : Clients)
+	{
+		if (C.AccountNumber == Client.AccountNumber)
+		{
+			if (C.PinCode == Client.PinCode)
+			{
+				Global = C;
+				return "Found";
+			}
+			return "PinCode is wrong";
+		}
+
+	}
+	return "Account Number Invalid";
+}
+void GoBackToMenue()
+{
+	cout << "Press any key to go back to main menue...";
+	system("pause>0");
+	ATM();
+}
+short AmountOfWithdraw(enQuickWithdraw Choice)
+{
+	switch (Choice)
+	{
+	case Twonty:
+		return 20;
+		break;
+	case Fifty:
+		return 50;
+		break;
+	case Handerd:
+		return 100;
+		break;
+	case TwoHanderd:
+		return 200;
+		break;
+	case FourHanderd:
+		return 400;
+		break;
+	case SixHanderd:
+		return 600;
+		break;
+	case EightHanderd:
+		return 800;
+		break;
+	case Thouthent:
+		return 1000;
+		break;
+	case Exit:
+		return 0;
+		break;
+	
+	}
+}
+void Withdraw(string filename, string AccountNumber, short Amount)
+{
+	vector<stClient> Clients = LoadDataFromFile();
+	for (stClient& C : Clients)
+	{
+		if (C.AccountNumber == AccountNumber)
+		{
+			C.AccountBalance -= Amount;
+			break;
+		}
+	}
+	SaveDateToFile(Clients);
+
+}
+int ReadDipoist()
+{
+	int Number = 0;
+	do
+	{
+		cout << "\nEnter a positive Deposit Amount : ";
+		cin >> Number;
+	} while (Number < 0);
+
+	return Number;
+}
+void QuickWithdraww(enQuickWithdraw Choice)
+{
+	short Amount = AmountOfWithdraw(Choice);
+	if (CheckAmount(Amount))
+	{
+
+		if (Amount != 0)
+		{
+			if (AreYouSure())
+			{
+				Withdraw(FilePath, Global.AccountNumber, Amount);
+				Global.AccountBalance -= Amount;
+				cout << "\n\nDone successfully, " << GetAccountBalance() << endl;
+			}
+		}
+	}
+	else
+		cout << "\n\n\nThe amount exceds your balance, make another choice" << endl;
+
+}
+void NormalWithdeaww()
+{
+	NormalDrawHeader();
+	int Amount = ReadAnount5_s();
+	if (CheckAmount(Amount))
+	{
+		if (AreYouSure())
+		{
+
+			Withdraw(FilePath, Global.AccountNumber, Amount);
+			Global.AccountBalance -= Amount;
+			cout << "\n\nDone successfully, " << GetAccountBalance() << endl;
+		}
+	}
+	else
+		cout << "\n\n\nThe amount exceds your balance, make another choice" << endl;
+}
+void Dipositt()
+{
+	DepositHeder();
+	int Amount = ReadDipoist();
+
+	if(AreYouSure())
+	{
+		Withdraw(FilePath, Global.AccountNumber, -Amount);
+		Global.AccountBalance += Amount;
+		cout << "\n\nDone successfully, " << GetAccountBalance() << endl;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+// Headers
+void LoginHeader()
+{
+	cout << "--------------------------" << endl;
+	cout << "    Login Screen" << endl;
+	cout << "--------------------------" << endl;
+}
+void AccountBalanceHeader()
+{
+	cout << "----------------------------" << endl;
+	cout << "   Check Balance Screen " << endl;
+	cout << "----------------------------" << endl;
+}
+void NormalDrawHeader()
+{
+	cout << "-------------------------------" << endl;
+	cout << "  Normal Withdraw Screen" << endl;
+	cout << "-------------------------------" << endl;
+}
+void DepositHeder()
+{
+	cout << "-------------------------------" << endl;
+	cout << "        Deposit Screen" << endl;
+	cout << "-------------------------------" << endl;
+}
+
+//Acount Balance screen
+void AccountBalanceScree()
+{
+	AccountBalanceHeader();
+	cout << GetAccountBalance() << endl;
+}
+
+
+//Process Date
+void ProcessChoiceAndReturnToFouncton_ATM_Menue(enChoice Choice)
+{
+	switch (Choice)
+	{
+	case QuickWithdraw:
+		system("cls");
+		QucikWithdraw();
+		GoBackToMenue();
+		break;
+	case NormalWithdraw:
+		system("cls");
+		NormalWithdeaww();
+		GoBackToMenue();
+		break;
+	case Deposit:
+		system("cls");
+		Dipositt();
+		GoBackToMenue();
+		break;
+	case CheckBalance:
+		system("cls");
+		AccountBalanceScree();
+		GoBackToMenue();
+		break;
+	case Logout:
+		Login();
+		system("cls");
+		break;
+	default:
+		cout << "\n\n\nError Choice, Try Again !" << endl;
+		break;
+	}
+
+}
+
+
+void QucikWithdraw()
+{
+	
+	cout << "===============================================" << endl;
+	cout << "            Qucik Withdraw " << endl;
+	cout << "===============================================" << endl;
+	cout << "\t[1] 20          [2] 50" << endl;
+	cout << "\t[3] 100         [4] 200" << endl;
+	cout << "\t[5] 400         [6] 600" << endl;
+	cout << "\t[7] 800         [8] 1000" << endl;
+	cout << "\t[9] Exit" << endl;
+	cout << "===============================================" << endl;
+	cout << GetAccountBalance();
+	QuickWithdraww(ReadChoiceInQuickWithdraw());
+	
+}
+void ATM()
+{
+	system("cls");
+	cout << "         Wellcom " << Global.Name << endl << endl;
+	cout << "========================================" << endl;
+	cout << "       ATM Main Menue Screen" << endl;
+	cout << "========================================" << endl;
+	cout << "\t" << "[1] Quick Withdraw." << endl;
+	cout << "\t" << "[2] Normal Withdraw." << endl;
+	cout << "\t" << "[3] Deposit." << endl;
+	cout << "\t" << "[4] Check Balance." << endl;
+	cout << "\t" << "[5] Logout." << endl;
+	cout << "========================================" << endl;
+	ProcessChoiceAndReturnToFouncton_ATM_Menue(ReadChoiceInATM_Menue());
+
+
+}
+
+void Login()
+{
+	vector<stClient> Clients = LoadDataFromFile();
+	bool ChechResult = true;
+	string Error = "";
+	
+	do
+	{
+		if (ChechResult == false)
+		{
+			cout << "\n\n" << Error;
+			system("pause>0");
+		}
+		system("cls");
+		LoginHeader();
+		cout << "Please enter AccountNumber : ";
+		getline(cin >> ws, Global.AccountNumber);
+		cout << "Please enter PinCode : ";
+		getline(cin, Global.PinCode);
+		ChechResult = (Error=SearchForClientsByAccountNumbrAndPinCode(Clients, Global)) == "Found";
+	} while (!ChechResult);
+
+	ATM();
+}
+
+
+
+
+
+
+
+
+
+
+
+int main()
+{
+	Login();
+}

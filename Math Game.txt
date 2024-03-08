@@ -1,0 +1,279 @@
+#include<iostream>
+#include<string>
+#include<cmath>
+#include<cstdlib>
+using namespace std;
+
+enum enlevel { Esey = 1, Med = 2, Hard = 3, Mix = 4 };
+enum enOperationType { Add = 1, Sub = 2, Mul = 3, Div = 4, mix = 5 };
+enum enPassFail{Pass=1,Fail=0};
+struct stOneQustion
+{
+	short num1;
+	short num2;
+	enOperationType OperationType;
+	enlevel level;
+	short RightAnswer;
+};
+struct stQuizz
+{
+	stOneQustion Qustions[100];
+	short count_Right;
+	short count_Wrong;
+	short NumberQus;
+	enOperationType OperationType_Quizz;
+	enlevel level_Quizz;
+	bool Pass_Or_Fail;
+};
+
+//string
+string PrintSempol(enOperationType Op)
+{
+	string OP[4] = { "+","-","*","/" };
+	return OP[Op - 1];
+}
+string GetLevel(enlevel L)
+{
+	string level[4] = { "Esey", "Med" , "Hard" , "Mix" };
+	return level[L - 1];
+}
+string GetOp(enOperationType OP)
+{
+	string Op[5] = { "Add", "Sub" , "Mul" , "Div" , "mix" };
+	return Op[OP - 1];
+}
+string Tap(short n)
+{
+	string space = "";
+	for (int i = 0; i < n; i++)
+		space += " ";
+	return space;
+}
+string PassOrFail(bool R)
+{
+	if (R == 1)
+		return "Pass :)";
+	else
+		return "Fail :(";
+
+}
+char AskUser()
+{
+	char letter = 'Y';
+	do
+	{
+		cout << "\nDo You Want To Play Again [Y], [N] ?  ";
+		cin >> letter;
+	} while (!(letter == 'Y' || letter == 'y' || letter == 'n' || letter == 'N'));
+	return letter;
+}
+
+// User 
+short ReadNumberOfQustion(string message)
+{
+	int num;
+	do
+	{
+		cout << message << "   ";
+		cin >> num;
+	} while (num <= 0);
+	return num;
+}
+enOperationType ReadOperationTypy(string message)
+{
+	short Op=0;
+	do
+	{
+		cout << message << "   ";
+		cin >> Op;
+	} while (Op < 1 || Op>5);
+	return (enOperationType)Op;
+}
+enlevel ReadLevelOfQuizz(string message)
+{
+	short level = 0;
+	do
+	{
+		cout << message << "  ";
+		cin >> level;
+	} while (level > 4 || level < 1);
+
+	return (enlevel)level;
+}
+
+
+int CalculateRightAnswer(int num1, int num2, enOperationType Op)
+{
+	switch (Op)
+	{
+	case enOperationType::Add:
+		return num1 + num2;
+		break;
+	case enOperationType::Sub:
+		return num1 - num2;
+		break;
+	case enOperationType::Mul:
+		return num1 * num2;
+		break;
+	case enOperationType::Div:
+		return num1 / num2;
+		break;
+	default:
+		return 0;
+	}
+
+}
+int RandomNUmber(int from, int to)
+{
+	int Random = rand() % (to - from + 1) + from;
+	return Random;
+}
+
+
+// Random OP_Level
+enOperationType GetOpertionTypy_Randonm()
+{
+	return (enOperationType)RandomNUmber(1, 4);
+}
+enlevel GetLevel_Random()
+{
+	return (enlevel)RandomNUmber(1, 3);
+}
+
+
+// Quistion _ Quizzzz
+stOneQustion GenerateQustion(enOperationType OP, enlevel level)
+{
+	stOneQustion Qustion;
+
+	if (OP == enOperationType::mix)
+	     	OP = GetOpertionTypy_Randonm();
+	if (level == enlevel::Mix)
+	        level = GetLevel_Random();
+
+	if (level == enlevel::Esey)
+	{
+		Qustion.num1 = RandomNUmber(1, 10);
+		Qustion.num2 = RandomNUmber(1, 10);
+
+		Qustion.level = level;
+		Qustion.OperationType = OP;
+
+		Qustion.RightAnswer = CalculateRightAnswer(Qustion.num1, Qustion.num2, Qustion.OperationType);
+	}
+	else if (level == enlevel::Med)
+	{
+		Qustion.num1 = RandomNUmber(10, 50);
+		Qustion.num2 = RandomNUmber(10, 50);
+
+		Qustion.level = level;
+		Qustion.OperationType = OP;
+
+		Qustion.RightAnswer = CalculateRightAnswer(Qustion.num1, Qustion.num2, Qustion.OperationType);
+
+	}
+	else if (level == enlevel::Hard)
+	{
+		Qustion.num1 = RandomNUmber(1, 100);
+		Qustion.num2 = RandomNUmber(1, 100);
+
+		Qustion.level = level;
+		Qustion.OperationType = OP;
+
+		Qustion.RightAnswer = CalculateRightAnswer(Qustion.num1, Qustion.num2, Qustion.OperationType);
+	}
+
+	return Qustion;
+}
+void  GenerateQuizz(stQuizz& Qustion)
+{
+	for (int i = 0; i < Qustion.NumberQus; i++)
+		Qustion.Qustions[i] = GenerateQustion(Qustion.OperationType_Quizz, Qustion.level_Quizz);
+}
+void PrintQustion(int Number1, int Number2, enOperationType Op)
+{
+	cout << Number1 << endl;
+	cout << Number2 << "    " << PrintSempol(Op) << endl;
+	cout << "-------" << endl;
+
+}
+void PrintQuizz(stQuizz& Qustion)
+{
+	cout << "\n\n\n";
+	int Answer = 0;
+	Qustion.count_Right = 0;
+	Qustion.count_Wrong = 0;
+	for (int i = 0; i < Qustion.NumberQus; i++)
+	{
+		PrintQustion(Qustion.Qustions[i].num1, Qustion.Qustions[i].num2, Qustion.Qustions[i].OperationType);
+		cin >> Answer;
+		if (Qustion.Qustions[i].RightAnswer == Answer)
+		{
+			cout << "Rigth Answer :)" << endl;
+			Qustion.count_Right++;
+			system("color 2F");
+		}
+		else
+		{
+			cout << "Wrong Answer :(" << endl;
+			cout << "The Right Answer is : " << Qustion.Qustions[i].RightAnswer << endl;
+			Qustion.count_Wrong++;
+			
+			system("color 4F");
+			cout << "\a";
+		}
+
+	}
+	Qustion.Pass_Or_Fail = Qustion.count_Right > Qustion.count_Wrong;
+}
+void PrintFinylResult(stQuizz Qustion)
+{
+	cout << endl << endl << endl<<endl;
+	cout << Tap(5) << "----------------------------------------------\n";
+	cout << Tap(15) << "Final Results is " << PassOrFail(Qustion.Pass_Or_Fail) << endl;
+	cout << Tap(5) << "----------------------------------------------\n";
+	cout <<Tap(5)<< "Number of Questions     :"<< Qustion.NumberQus<<endl;
+	cout <<Tap(5)<< "Questions level         :"<< GetLevel(Qustion.level_Quizz)<<endl;
+	cout <<Tap(5)<< "OpType                  :"<< GetOp(Qustion.OperationType_Quizz)<<endl;
+	cout <<Tap(5)<< "Number of Right Answers : "<< Qustion.count_Right<<endl;
+	cout <<Tap(5)<< "Number of Wrong Answers : " << Qustion.count_Wrong << endl;
+	cout << Tap(5) << "----------------------------------------------\n";
+	
+}
+void Quizz()
+{
+	stQuizz Quizz;
+
+	Quizz.NumberQus = ReadNumberOfQustion("How many Quistion do you want to answer ? ");
+	Quizz.OperationType_Quizz = ReadOperationTypy("Enter Operation Type  [Add = 1], [Sub = 2], [Mul = 3], [Div = 4], [Mix = 5] ? ");
+	Quizz.level_Quizz = ReadLevelOfQuizz("Please enter a level [Easy = 1], [Med = 2], [Hard = 3], [Mix = 4]  ? ");
+
+	GenerateQuizz(Quizz);
+	PrintQuizz(Quizz);
+	PrintFinylResult(Quizz);
+}
+
+void ResetScreen()
+{
+	system("cls");
+	system("color 0F");
+}
+
+void Start_Game()
+{
+	char letter = 'Y';
+	do
+	{
+		ResetScreen();
+		Quizz();
+		letter = AskUser();
+	} while (letter == 'Y' || letter == 'y');
+}
+
+
+
+int main()
+{
+	srand((unsigned)time(NULL));
+	Start_Game();
+}

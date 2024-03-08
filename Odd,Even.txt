@@ -1,0 +1,252 @@
+#include<iostream>
+#include<cmath>
+#include<cstdlib>
+#include<string>
+using namespace std;
+
+enum enWinner{win=1,lose=0};
+enum enChoice{Odd=1,Even=2};
+
+struct stRound
+{
+	short NumberPlayer;
+	short NumberComputer;
+	enChoice OddOrEven;
+	string Winner;
+	short count;
+};
+
+struct stGAme
+{
+	short CountWinn;
+	short CountLose;
+	string FinalWiner;
+	short HowManyRound;
+
+};
+
+short RandomNumber(int from, int to)
+{
+	int Random = rand() % (to - from + 1) + from;
+	return Random;
+}
+
+short ReadNUmberFromUser(string message)
+{
+	int Number = 0;
+	do
+	{
+		cout << message << "   ";
+		cin >> Number;
+	} while (!(Number >= 1 && Number <= 9));
+	return Number;
+}
+
+short GetComputerNumber()
+{
+	return RandomNumber(1, 9);
+}
+
+
+
+enChoice ReadChoice()
+{
+	short Choice = 0;
+	do
+	{
+		cout << "PLease enter your choice [1]- ODD, [2]- EVEN     ? ";
+		cin >> Choice;
+	} while (!(Choice == 1 || Choice == 2));
+	return (enChoice)Choice;
+}
+
+string PrintWinner(enWinner Winner)
+{
+	if (Winner == enWinner::win)
+		return "Player :-)";
+	else
+		return "Computer :-(";
+	
+}
+string Tap(short t)
+{
+	string T = "";
+	for (int i = 1; i <= t; i++)
+		T += "\t";
+		return T;
+}
+
+
+string PrintChoice(enChoice Choice)
+{
+	if (Choice == enChoice::Even)
+		return "EVEN";
+	else
+		return "ODD";
+}
+enWinner ProssceingData(stRound Round)
+{
+	short Sum = Round.NumberComputer + Round.NumberPlayer;
+
+	if (Sum % 2 == 0)
+		switch (Round.OddOrEven)
+		{
+		case enChoice::Even:
+		{
+			return enWinner::win;
+			Round.Winner = "Player";
+		}
+			break;
+		case enChoice::Odd:
+		{
+			return enWinner::lose;
+			Round.Winner = "Computer";
+		}
+			break;
+		}
+	else
+		switch (Round.OddOrEven)
+		{
+		case enChoice::Odd:
+		{
+			return enWinner::win;
+			Round.Winner = "Player";
+		}
+			break;
+		case enChoice::Even:
+		{
+			return enWinner::lose;
+			Round.Winner = "Computer";
+		}
+			break;
+		}
+
+
+}
+bool CheckWinner(stGAme G)
+{
+	return G.CountWinn > G.CountLose;
+}
+stRound FillDataRound(stGAme& Game)
+{
+	
+	stRound Round;
+	++Round.count;
+	
+	Round.NumberPlayer = ReadNUmberFromUser("Please enter a number from [1] to [9]");
+	Round.NumberComputer = GetComputerNumber();
+	Round.OddOrEven = ReadChoice();
+	Round.Winner = PrintWinner(ProssceingData(Round));
+	
+	if (Round.Winner == "Player :-)")
+	{
+		Game.CountWinn++;
+		system("color 2F");
+	}
+	else if (Round.Winner == "Computer :-(")
+	{
+		Game.CountLose++;
+		system("color 4F");
+		cout << "\a";
+	}
+
+	
+	return Round;
+}
+
+void Print_Round(stRound Round)
+{
+	cout << endl << endl << endl;
+	cout << Tap(5) << "***************************************************" << endl;
+	cout << Tap(7) << "Round ["<<Round.count<<"] Result" << endl;
+	cout << Tap(5) << "***************************************************" << endl;
+	cout << Tap(5) << "Your Choice         : " << PrintChoice(Round.OddOrEven) << endl;
+	cout << Tap(5) << "Your Number inputed : " << Round.NumberPlayer << endl;
+	cout << Tap(5) << "Computer Number     :" << Round.NumberComputer << endl;
+	cout << Tap(5) << "Winner              :" << Round.Winner << endl;
+	cout << Tap(5) << "***************************************************" << endl << endl << endl << endl;
+	
+}
+
+stGAme PlayGame(stRound &Round)
+{
+	stGAme Game;
+	Game.CountLose = 0;
+	Game.CountWinn = 0;
+	Game.HowManyRound= ReadNUmberFromUser("How Many Round Do You Want To Play [1 to 9] ?");
+	
+	for (Round.count = 1; Round.count <= Game.HowManyRound; Round.count++)
+	{
+		cout << endl << endl << endl;
+		cout << Tap(4) << "Round [" << Round.count << "]" << endl << endl;
+		Print_Round(FillDataRound(Game));
+	}
+	
+	
+
+	if (CheckWinner(Game) == true)
+	
+		Game.FinalWiner = "Player";
+		
+	else
+	
+		Game.FinalWiner = "Computer";
+	
+
+	return Game;
+}
+
+void Print_Final_(stGAme Game)
+{
+	cout <<endl<<endl<<endl<<endl;
+
+	
+	cout << Tap(6) << "|" << "----------------------------------------------------" << "|" << endl;
+	cout << Tap(6) << "|" << Tap(2) << "G A M E     O V E R " << Tap(2) << "     |" << endl;
+	cout << Tap(6) << "|" << "----------------------------------------------------" << "|" << endl;
+	cout << Tap(6) << "|" << "Number of Round : " << Game.HowManyRound << Tap(4) << "     |" << endl;
+	cout << Tap(6) << "|" << "User Win        : " << Game.CountWinn << Tap(4) << "     |" << endl;
+	cout << Tap(6) << "|" << "Computer Win    : " << Game.CountLose << Tap(4) << "     |" << endl;
+	cout << Tap(6) << "|" << "Final Winner    : " << Game.FinalWiner << Tap(3) << "     |" << endl;
+	cout << Tap(6) << "|" << "----------------------------------------------------" << "|" << endl;
+}
+
+char AskUser()
+{
+	char letter = 'y';
+	cout << "Do You Want To Play Again  [y/n]  ? ";
+	cin >> letter;
+	while (!((letter == 'Y' || letter == 'y') || (letter == 'n' || letter == 'N')))
+	{
+		cout << "\n\nWrong letter please try again " << endl;
+		cout << "Do You Want To Play Again  [y/n]  ? ";
+		cin >> letter;
+	}
+	return letter;
+}
+
+void ResetScreen()
+{
+	system("cls");
+	system("color 0F");
+}
+
+void Game()
+{
+	char letter = 'y';
+	do
+	{
+		ResetScreen();
+		stRound Round;
+		Print_Final_(PlayGame(Round));
+		letter = AskUser();
+	} while (letter == 'Y' || letter == 'y');
+}
+
+int main()
+{
+	srand((unsigned)time(NULL));
+
+	Game();
+
+}
